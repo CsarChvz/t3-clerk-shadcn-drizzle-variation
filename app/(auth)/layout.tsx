@@ -10,7 +10,9 @@ export default async function AuthLayout({
   const session = await getUserAuth();
   if (session?.session) redirect("/dashboard");
 
-  return ( <div className="bg-muted h-screen pt-8">
-<ClerkProvider>{children}</ClerkProvider>
-</div> );
+  return (
+    <div className="bg-muted h-screen pt-8">
+      <ClerkProvider afterSignOutUrl={"/"}>{children}</ClerkProvider>
+    </div>
+  );
 }

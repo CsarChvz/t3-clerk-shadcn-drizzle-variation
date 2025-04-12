@@ -15,7 +15,7 @@ export default async function AppLayout({
   const cookieStore = await cookies();
   return (
     <main>
-      <ClerkProvider>
+      <ClerkProvider afterSignOutUrl={"/"}>
         <TRPCReactProvider cookies={cookieStore.toString()}>
           <div className="flex h-screen">
             <Sidebar />

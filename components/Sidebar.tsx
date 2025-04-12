@@ -4,6 +4,7 @@ import Link from "next/link";
 import SidebarItems from "./SidebarItems";
 import { AuthSession, getUserAuth } from "@/lib/auth/utils";
 import {UserButton} from '@clerk/nextjs'
+import SignOutBtn from "./auth/SignOutBtn";
 const Sidebar = async () => {
   const session = await getUserAuth();
   if (session.session === null) return null;
@@ -38,7 +39,7 @@ const UserDetails = ({ session }: { session: AuthSession }) => {
             {user.email ?? "john@doe.com"}
           </p>
         </div>
-        <UserButton afterSignOutUrl="/" />
+        <UserButton />
       </div>
     </Link>
   );
