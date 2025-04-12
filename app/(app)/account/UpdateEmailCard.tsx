@@ -1,3 +1,5 @@
+"use client";
+
 import { AccountCard, AccountCardFooter, AccountCardBody } from "./AccountCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,25 +11,40 @@ export default function UpdateEmailCard({ email }: { email: string }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const handleSubmit = async (event: React.SyntheticEvent) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const target = event.target as HTMLFormElement;
-    const form = new FormData(target);
-    const { email } = Object.fromEntries(form.entries()) as { email: string };
-    if (email.length < 3) {
-      toast.error("Email must be longer than 3 characters.");
+    const formData = new FormData(event.currentTarget);
+    const newEmail = formData.get("email") as string;
+
+    if (!newEmail.includes("@")) {
+      toast.error("Please enter a valid email address.");
       return;
     }
 
     startTransition(async () => {
-      const res = await fetch("/api/account", {
-        method: "PUT",
-        body: JSON.stringify({ email }),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.status === 200)
-        toast.success("Successfully updated email!");
-      router.refresh();
+      try {
+        const response = await fetch("/api/account", {
+          method: "PUT",
+          body: JSON.stringify({ email: newEmail }),
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        toast.success(
+          "Successfully updated email! Please check your inbox to verify."
+        );
+        router.refresh();
+      } catch (error) {
+        console.error("Email update failed:", error);
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Failed to update email. Please try again."
+        );
+      }
     });
   };
 
@@ -41,10 +58,26 @@ export default function UpdateEmailCard({ email }: { email: string }) {
     >
       <form onSubmit={handleSubmit}>
         <AccountCardBody>
-          <Input defaultValue={email ?? ""} name="email" disabled={true} />
+          <Input
+            defaultValue={email}
+            name="email"
+            type="email"
+            disabled={isPending}
+            required
+            pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+          />
         </AccountCardBody>
-        <AccountCardFooter description="We will email vou to verify the change.">
-          <Button disabled={true}>Update Email</Button>
+        <AccountCardFooter description="We will email you to verify the change.">
+          <Button type="submit" disabled={isPending} aria-disabled={isPending}>
+            {isPending ? (
+              <div className="flex items-center gap-2">
+                <span className="animate-spin">↻</span>
+                Updating...
+              </div>
+            ) : (
+              "Update Email"
+            )}
+          </Button>
         </AccountCardFooter>
       </form>
     </AccountCard>
